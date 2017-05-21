@@ -33,11 +33,11 @@ long_perihelion = perihelion_long_degs + perihelion_long_degs_cent * time_since_
 ascending_node = asc_node_degs + asc_node_degs_cent * time_since_epoch
 
 #print(semi_major_axis)
-#print(eccentricity)
-#print(inclination)
+#print("Eccentricity: " + str(eccen))
+#print("Inclination: "+ str(inclination))
 #print(mean_longitude)
 #print(long_perihelion)
-#print(ascending_node)
+#print("Ascending node: " + str(ascending_node))
 
 perihelion = perihelion_long_degs - ascending_node
 mean_anomaly = mean_longitude - perihelion_long_degs
@@ -49,28 +49,60 @@ if mean_anomaly > 180:
 #print("mean anomaly is" + str(mean_anomaly))
 
 #print(perihelion)
-#print(mean_anomaly)
+#print("Mean anomaly: "+ str(mean_anomaly))
 
 def kep_eq(e, M):
     delta_M = 0
-    delta_E = 0
-    E0 = M + math.degrees(e) * math.degrees(math.sin(math.radians(M)))
-    #print(abs(E0))
-    while abs(delta_E) <= 0.000001:
+    delta_E = 1
+    E0 = M + math.degrees(e) * math.sin(math.radians(M))
+    print(abs(E0))
+    while abs(delta_E) > 0.000001:
         print("This loop ran")
-        delta_M = M - (E0 - math.degrees(e) * math.sin(E0))
-        delta_E = delta_M / (1 - e * math.cos(E0))
+        delta_M = M - (E0 - math.degrees(e) * math.sin(math.radians(E0)))
+        #print("delta m " + str(delta_M))
+        delta_E = delta_M / (1 - e * math.cos(math.radians(E0)))
+        #print("delta e " + str(delta_E))
         E0 = E0 + delta_E
+        #print("En " + str(E0))
 
     return E0
 
-#print(kep_eq(eccen, mean_anomaly))
+
+#print("e: " + str(eccen))
+#print("M: " + str(mean_anomaly))
+print("E: "+ str(kep_eq(eccen, mean_anomaly)))
+
+
 eccentric_anomaly = kep_eq(eccen, mean_anomaly)
 
-heliocentric_x = semi_major_axis * (math.cos(eccentric_anomaly) - eccen)
-heliocentric_y = semi_major_axis * math.sqrt(1 - eccen*eccen) * math.sin(eccentric_anomaly)
+heliocentric_x = semi_major_axis * (math.cos(math.radians(eccentric_anomaly)) - eccen)
+heliocentric_y = semi_major_axis * math.sqrt(1 - eccen**2) * math.sin(math.radians(eccentric_anomaly))
 heliocentric_z = 0
 
 print(heliocentric_x)
 print(heliocentric_y)
 print(heliocentric_z)
+
+# I believe this is where things will start getting messy...
+
+x1 = (math.degrees(math.cos(long_perihelion))*math.degrees(math.cos(ascending_node)))
+x2 = math.degrees(math.sin(long_perihelion))*math.degrees(math.sin(ascending_node))*math.degrees(math.cos(inclination))
+x_one = (x1 - x2) * heliocentric_x
+x3 = -(math.degrees(math.sin(long_perihelion))*math.degrees(math.cos(ascending_node)))
+x4 = math.degrees(math.cos(long_perihelion))*math.degrees(math.sin(ascending_node))*math.degrees(math.cos(inclination))
+x_two = (x3 - x4) * heliocentric_y
+ecliptic_x = x_one + x_two
+
+y1 = (math.degrees(math.cos(long_perihelion))*math.degrees(math.sin(ascending_node)))
+y2 = math.degrees(math.sin(long_perihelion))*math.degrees(math.cos(ascending_node))*math.degrees(math.cos(inclination))
+y_one = (y1 + y2) * heliocentric_x
+y3 = -(math.degrees(math.sin(long_perihelion))*math.degrees(math.sin(ascending_node)))
+y4 = math.degrees(math.cos(long_perihelion))*math.degrees(math.cos(ascending_node))*math.degrees(math.cos(inclination))
+y_two = (y3 + y4) * heliocentric_y
+ecliptic_y = y_one + y_two
+
+z1 = math.degrees(math.sin(long_perihelion))
+
+#ecliptic_y
+#ecliptic_z
+
